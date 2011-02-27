@@ -8,7 +8,7 @@ by Vasiliki Kalavri (vasilikikalavri@gmail.com)*/
 - init_profiling(buff_size, file_prefix)
 - record_event(type, value)
 - flush(thread)
-- finalize()
+- finalize_profiling()
 */
 
 #include "src-cycle.h"
@@ -23,7 +23,8 @@ struct event {
 	};
 
 FILE* f;	//the thread's file
-int* buff;	//the thread's buffer
+struct event *buff;	//the thread's buffer
+int cur_pos;	//current position in the buffer
 
 
 /*Library initialization*/
@@ -40,17 +41,47 @@ int init_profiling(int buff_size, char* file_prefix){
 		printf("out of memory");
 		return -1;
 	}
+	
+	//initialize buffer pointer
+	cur_pos = 0;
+
 	//open file
 	if((f = fopen(file_prefix, "w"))== NULL){
-		printf("fopen");
+		printf("fopen error");
 		return -1;
 	}
 	else{
-		fprintf(f, "Initializing...\n");
+		fprintf(f, "Initializing [%lu]\n", getticks());
 		return 0;
 	}
 }
 
+
+/* record an event*/
+void record_event(int type, int value){
+	struct event e;
+
+	e.threadID = pthread_self();
+	e.timestamp = getticks();
+	e.event_type = type;
+	e.event_value = value;
+
+	//check if buffer is full
+
+	//if yes, flush the buffer
+
+	//initialize buffer pointer
+
+	//if not, save event in the buffer
+	buff[cur_pos] = e;
+}
+
+/*Library finalization*/
 int finalize_profiling(){
-	fclose(f);
+	if( (fclose(f))!= 0){
+		printf("fclose error");
+		return -1;
+	}
+	else
+		return 0;
 }
