@@ -11,6 +11,9 @@ by Vasiliki Kalavri (vasilikikalavri@gmail.com)*/
 - finalize_profiling()
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "src-cycle.h"
 
 
@@ -26,6 +29,7 @@ FILE* f;		//the thread's file
 struct event *buff;	//the thread's buffer
 int cur_pos;		//current position in the buffer
 int ext_buff_size;	//global variable for buffer size
+char file_suf[20];	//file suffix
 
 
 /*Library initialization*/
@@ -46,16 +50,18 @@ int init_profiling(int buff_size, char* file_prefix){
 	//initialize buffer pointer
 	cur_pos = 0;
 	ext_buff_size = buff_size;
-	
+
+	//file name depending on threadID
+	sprintf(file_suf, "%u", pthread_self());
 
 	//open file
-	if((f = fopen(file_prefix, "w"))== NULL){
+	if((f = fopen(strcat(file_prefix, file_suf), "w"))== NULL){
 		printf("fopen error");
 		return -1;
 	}
 	else{
-		fprintf(f, "Initializing [%lu]\n", getticks());
-		//fprintf(f, "ThreadID\tTime\t\tType\t\tValue\n");
+		fprintf(f, "Initializing Time: [%lu]\n", getticks());
+		fprintf(f, "ThreadID: [%u]\n", pthread_self());
 		return 0;
 	}
 }
@@ -65,7 +71,7 @@ int init_profiling(int buff_size, char* file_prefix){
 void flush(pthread_t threadID){
 	int i;
 	for(i=0; i<ext_buff_size; i++){
-		fprintf(f, "%10u\t", buff[i].timestamp);
+		fprintf(f, "%10lu\t", buff[i].timestamp);
 		fprintf(f, "%10d\t%10d\n" , buff[i].event_type, buff[i].event_value); 
 		}
 
