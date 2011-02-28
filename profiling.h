@@ -16,7 +16,7 @@ by Vasiliki Kalavri (vasilikikalavri@gmail.com)*/
 
 /*event struct*/
 struct event {
-	pthread_t threadID; 	//the threadID
+	//pthread_t threadID; 	//the threadID
 	ticks timestamp;	//the timestamp of the event
 	int event_type;		//event type: application specific
 	int event_value;	//event value: event specific
@@ -63,52 +63,36 @@ int init_profiling(int buff_size, char* file_prefix){
 
 /*flush the buffer*/
 void flush(pthread_t threadID){
-	int i=0;
+	int i;
 	for(i=0; i<ext_buff_size; i++){
-		//fprintf(f, "%u %u %d %d\n", buff[i].threadID, buff[i].timestamp, buff[i].event_type, buff[i].event_value);
-		fprintf(f, "%u\t", buff[i].threadID); 
-		fprintf(f, "%u\t", buff[i].timestamp); 
-		fprintf(f, "%d\t", buff[i].event_type); 
-		fprintf(f, "%d\t", buff[i].event_value);	
-		fprintf(f, "\n");
-		/*printf("***ID: %u\n\n", buff[i].threadID);
-		printf("***Time: %u\n\n", buff[i].timestamp);
-		printf("***Type = %d\n\n", buff[i].event_type);
-		printf("***Value =  %d\n\n", buff[i].event_value);*/
-		//printf("ID: %u\t\t time: %u\t\t type: %d\t\t value: %d\n", buff[i].threadID, buff[i].timestamp, buff[i].event_type, buff[i].event_value); 
-	}
+		fprintf(f, "%10u\t", buff[i].timestamp);
+		fprintf(f, "%10d\t%10d\n" , buff[i].event_type, buff[i].event_value); 
+		}
+
+	//initialize buffer & buffer pointer
+	cur_pos = 0;
+	for(i=0; i<ext_buff_size; i++){
+		buff[i].timestamp = 0;
+		buff[i].event_type = 0;
+		buff[i].event_value = 0;
+		}
 }
 
 /* record an event*/
 void record_event(int type, int value){
-	/*struct event e;
-
-	e.threadID = pthread_self();
-	e.timestamp = getticks();
-	e.event_type = type;
-	e.event_value = value;*/
 
 	//check if buffer is full -> how???
-	if(cur_pos == ext_buff_size-1){	
+	if(cur_pos == ext_buff_size){	
 		//if yes, flush the buffer
 		flush(pthread_self());
-
-		//initialize buffer pointer
-		cur_pos = 0;
 	}
-	else{
 		//if not, save event in the buffer
-		buff[cur_pos].threadID = pthread_self();
 		buff[cur_pos].timestamp = getticks();
 		buff[cur_pos].event_type = type;
 		buff[cur_pos].event_value = value;
-		
-		printf("ID: %u\n\n", buff[cur_pos].threadID);
-		printf("Time: %u\n\n", buff[cur_pos].timestamp);
-		printf("buff[cur_pos].event_type = %d\n\n", buff[cur_pos].event_type);
-		printf("buff[cur_pos].event_value =  %d\n\n", buff[cur_pos].event_value);
-	}
-		
+
+		//increase buffer pointer
+		cur_pos++;
 }
 
 /*Library finalization*/
