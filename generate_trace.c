@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-//#include "post_processing.h"
+#include "post_processing.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	}
 	else{
 		if((input = fopen(argv[1], "r")) == NULL){
-			printf("fopen error");
+			printf("fopen error\n");
 			return -1;
 		}
 		else{
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 				fgets(s, 7, input);
 				
 				if((f_array[i] = fopen(s, "r")) == NULL){
-					printf("fopen error");
+					printf("fopen error\n");
 					return -1;
 				}
 
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 			}
 
 			//call post_processing library
-			//merge(f_array, num_files)	
+			merge_files(f_array, num_files);
 
 			//close all files
 			for(i=0; i<num_files; i++){
@@ -53,4 +53,3 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-	
