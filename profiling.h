@@ -17,6 +17,8 @@ by Vasiliki Kalavri (vasilikikalavri@gmail.com)*/
 #include <pthread.h>
 #include "src-cycle.h"
 
+#define END_OF_FILE -1
+
 
 /*event struct*/
 struct event {
@@ -72,7 +74,8 @@ int init_profiling(int buff_size, char* file_prefix, int num_threads){
 		}
 		else{
 			fprintf(f_array[i], "Initializing Time: [%lu]\n", getticks());
-			fprintf(f_array[i], "ThreadID: [%u]\n", i);
+			fprintf(f_array[i], "ThreadID: [%u]\n\n", i);
+			fprintf(f_array[i], "Timestamp \tEvent     \tValue\n\n");
 		}
 	}
 	return 0;
@@ -85,9 +88,11 @@ void flush(int i){
 	int j;
 
 	for(j=0; j<ext_buff_size; j++){
-		fprintf(f_array[i], "%10lu\t", buff_array[(i*ext_buff_size) + j].timestamp);
-		fprintf(f_array[i], "%10d\t" , buff_array[(i*ext_buff_size) + j].event_type);
-		fprintf(f_array[i], "%10d\n" , buff_array[(i*ext_buff_size) + j].event_value);
+		if(buff_array[(i*ext_buff_size) + j].timestamp !=0){
+			fprintf(f_array[i], "%10lu\t", buff_array[(i*ext_buff_size) + j].timestamp);
+			fprintf(f_array[i], "%10d\t" , buff_array[(i*ext_buff_size) + j].event_type);
+			fprintf(f_array[i], "%10d\n" , buff_array[(i*ext_buff_size) + j].event_value);
+		}
 	}
 
 	//initialize buffer & buffer pointer
@@ -124,6 +129,12 @@ int finalize_profiling(int num_threads){
 	//flush buffer
 	for(i=0; i<num_threads; i++)
 		flush(i);
+
+	//signal end-of-file
+	for(i=0; i<num_threads; i++){
+		fprintf(f_array[i], "%d", END_OF_FILE);
+	}
+	
 
 	//close files
 	for(i=0; i<num_threads; i++){
