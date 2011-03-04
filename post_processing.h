@@ -48,19 +48,20 @@ FILE* merge_files(FILE** f_array, int files){
 	for(i=0; i<files; i++)
 		fscanf(f_array[i], "%lu", &buff[i]);
 		
+	while(!(is_eof(buff, files))){
+		//find minimun index 
+		index = min_index(buff, files);
+		
+		//write record in trace file
+		fprintf(trace, "%10lu", buff[index]);
+		fscanf(f_array[index], "%d%d", &event, &value);
+		fprintf(trace, "%10d\t", event);
+		fprintf(trace, "%10d\n", value);
 
-	//find minimun index 
-	index = min_index(buff, files);
-	printf("minimum index = %d, minimum timestamp = %lu\n\n", index, buff[index]);
+		//read next timestamp of the file
+		fscanf(f_array[index], "%lu", &buff[index]);
 
-	//write record in trace file
-	fprintf(trace, "%10lu", buff[index]);
-	fscanf(f_array[index], "%d%d", &event, &value);
-	fprintf(trace, "%10d\t", event);
-	fprintf(trace, "%10d\n", value);
-
-	//read next timestamp of the file
-	fscanf(f_array[index], "%lu", &buff[index]);
+	}
 
 	//close trace file
 	fclose(trace);
@@ -70,16 +71,33 @@ FILE* merge_files(FILE** f_array, int files){
 
 int min_index(int *array, int n){
 	int i, index, temp;
-	temp = array[0];
-	index = 0;	
 
-	for(i=1; i<n; i++){
-		if(temp > array[i]){
-			index = i;
+	//initialization
+	for(i=0; i<n; i++){
+		if(array[i] != -1){
 			temp = array[i];
+			index = i;
+			break;
+		}
+	}
+
+	for(i=0; i<n; i++){
+		if(temp > array[i] && array[i] != -1){
+			temp = array[i];
+			index = i;
 		}
 	}
 	
 	return index;
 }
 
+int is_eof(int *array, int n){
+	int i;
+	
+	for(i=0; i<n; i++){
+		if(array[i]!=-1)
+			return 0;
+	}
+	
+	return 1;
+}

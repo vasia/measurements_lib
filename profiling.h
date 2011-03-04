@@ -134,7 +134,6 @@ int finalize_profiling(int num_threads){
 	for(i=0; i<num_threads; i++){
 		fprintf(f_array[i], "%d", END_OF_FILE);
 	}
-	
 
 	//close files
 	for(i=0; i<num_threads; i++){
