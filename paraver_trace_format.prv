@@ -1,0 +1,38 @@
+#Paraver (04/05/04 at 19:32):3771002:1(2):1:1(1:1),1
+c:1:1:1:1:1
+2:1:1:1:1:2771002:3:4
+
+
+##################
+ File description
+##################
+
+1st record
+-----------
+- #Paraver
+- one space
+- date and time (in the format above)
+- the timestamp of the last event recorded (here:3771002) can be in any units, paraver assumes nanoseconds
+- Number of nodes in the system (1 in the example)
+- For each node, number of CPUs in the node (2 processors in the node in the example)
+- The number of applications shown in the trace (1 in the example)
+- Number of tasks in the application (1 tasks in the example)
+- For each task, number of threads, and node where it runs (1 thread per node in the example)
+- Number of communicators used (1 in the example): Not used fro pthreads but has to be specified!
+
+2nd record
+-----------
+Communicator description: not used for pthreads but has to be specified!
+
+
+State records
+--------------
+1:cpu:appl:task:thread:begin_time:end_time:state
+
+NOTE: cpu, appl, task, thread and state are integers
+
+Event records
+--------------
+2:cpu:appl:task:thread:time:event_type:event_value
+
+Note: cpu, appl, task, thread, ebent_type and event_value are integers
