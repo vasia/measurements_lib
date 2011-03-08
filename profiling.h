@@ -22,7 +22,6 @@ by Vasiliki Kalavri (vasilikikalavri@gmail.com)*/
 
 /*event struct*/
 struct event {
-	//pthread_t threadID; 	//the threadID
 	ticks timestamp;	//the timestamp of the event
 	int event_type;		//event type: application specific
 	int event_value;	//event value: event specific
@@ -33,6 +32,7 @@ int* cur_pos_array;	//array of current positions
 struct event *buff_array;	//array of the thread's buffers
 
 int ext_buff_size;	//global variable for buffer size
+FILE *input;		//file containing the post-processing data
 
 /*Library initialization*/
 /*Parameters:
@@ -44,6 +44,7 @@ int init_profiling(int buff_size, char* file_prefix, int num_threads){
 	
 	struct event e;
 	char file_suf[10];	//file suffix
+	char *temp = malloc(10*sizeof(char));
 	int i;
 
 	ext_buff_size = buff_size;
@@ -60,6 +61,12 @@ int init_profiling(int buff_size, char* file_prefix, int num_threads){
 		return -1;
 	}
 
+	//open post-processing file - begin
+	if((input = fopen("input", "w")) == NULL){
+		printf("fopen error\n");
+		return -1;
+	}
+
 	//initialize buffer pointers and open files
 	for(i=0; i<num_threads; i++){
 
@@ -67,31 +74,39 @@ int init_profiling(int buff_size, char* file_prefix, int num_threads){
 
 		//file name depending on threadID
 		sprintf(file_suf, "%d", i);
+		temp = strcat(file_suf, file_prefix);
 
-		if((f_array[i] = fopen(strcat(file_suf, file_prefix), "w"))== NULL){
+		/*write file name in the post-processing file*/
+		fprintf(input, "%s\n", temp);
+		
+		if((f_array[i] = fopen(temp, "w"))== NULL){
 			printf("fopen error");
 			return -1;
 		}
 		else{
 			fprintf(f_array[i], "Initializing Time: [%lu]\n", getticks());
 			fprintf(f_array[i], "ThreadID: [%u]\n\n", i);
-			fprintf(f_array[i], "Timestamp \tEvent     \tValue\n\n");
+			fprintf(f_array[i], "Timestamp \tThreadID  \tEvent     \tValue\n\n");
 		}
 	}
+	//close post-processing file
+	fclose(input);
 	return 0;
 }
 
 
 /*flush the buffer*/
+/*i is the thread id*/
 void flush(int i){
 	
 	int j;
 
 	for(j=0; j<ext_buff_size; j++){
 		if(buff_array[(i*ext_buff_size) + j].timestamp !=0){
-			fprintf(f_array[i], "%10lu\t", buff_array[(i*ext_buff_size) + j].timestamp);
-			fprintf(f_array[i], "%10d\t" , buff_array[(i*ext_buff_size) + j].event_type);
-			fprintf(f_array[i], "%10d\n" , buff_array[(i*ext_buff_size) + j].event_value);
+			fprintf(f_array[i], "%10lu\t", buff_array[(i*ext_buff_size) + j].timestamp);	//time
+			fprintf(f_array[i], "%10d\t", i);	//thread id
+			fprintf(f_array[i], "%10d\t" , buff_array[(i*ext_buff_size) + j].event_type);	//event
+			fprintf(f_array[i], "%10d\n" , buff_array[(i*ext_buff_size) + j].event_value);	//value
 		}
 	}
 
@@ -105,6 +120,7 @@ void flush(int i){
 }
 
 /* record an event*/
+/*i is the thread id*/
 void record_event(int type, int value, int i){
 
 	//check if buffer is full
@@ -126,14 +142,30 @@ void record_event(int type, int value, int i){
 int finalize_profiling(int num_threads){
 
 	int i;
+	char s[50];
+
 	//flush buffer
 	for(i=0; i<num_threads; i++)
 		flush(i);
 
 	//signal end-of-file
 	for(i=0; i<num_threads; i++){
-		fprintf(f_array[i], "%d", END_OF_FILE);
+		fprintf(f_array[i], "%d\n", END_OF_FILE);
 	}
+
+	//write a timestamp later than the last event in the post-processing file 
+	if((input = fopen("input", "r+")) == NULL){
+			printf("fopen error\n");
+			return -1;
+		}
+	//move to the end of the file
+	for(i=0; i<num_threads; i++)
+		fgets(s, 50, input);
+	//write the last timestamp
+	fprintf(input, "%lu\n", getticks());
+
+	//close file containing the post-processing data
+	fclose(input);
 
 	//close files
 	for(i=0; i<num_threads; i++){
