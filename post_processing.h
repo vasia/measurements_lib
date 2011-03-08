@@ -9,25 +9,29 @@ by Vasiliki Kalavri (vasilikikalavri@gmail.com)*/
 
 /* Library API
 - merge_files()
-- generate_trace()
+- min_index()
+- is_eof()
 */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define FIRST_LINES 5	//number of header data lines in each file
 
 //merge the files of f_array based on their timestamp
 //to create a Paraver-compatible trace file
-FILE* merge_files(FILE** f_array, int files){
+FILE* merge_files(FILE** f_array, int files, long unsigned int last_tstamp){
 	
 	FILE* trace;	//the file descriptor of the trace file
 	long unsigned int cur_time;	//current timestamp
 	long unsigned int *buff;	//buffer of current timestamps to be examined
 	int i, j, index;
-	int event, value;
+	int threadID, event, value;
 	char s[100];
+
+ 	time_t tim=time(NULL);	
 
 	//read first lines of each file
 	for(i=0; i<files; i++){
@@ -43,7 +47,19 @@ FILE* merge_files(FILE** f_array, int files){
 
 	//allocate timestamps buffer
 	buff = malloc(files*sizeof(long unsigned int));
-	
+
+	//write first record of the Paraver trace
+	fprintf(trace, "#Paraver ");
+
+	//write current date and time
+	struct tm *now=localtime(&tim);
+	fprintf(trace, "(%02d/%02d/%d at ", now->tm_mday, now->tm_mon+1, now->tm_year-100);
+	fprintf(trace, "%02d:%02d):", now->tm_hour, now->tm_min);
+	fprintf(trace, "%lu:", last_tstamp);
+	fprintf(trace, "1(2):1:1(%d:1),1\n", files);
+
+	//(04/05/04 at 19:32):3771002:1(2):1:1(1:1),1
+
 	//load first timestamps
 	for(i=0; i<files; i++)
 		fscanf(f_array[i], "%lu", &buff[i]);
@@ -51,10 +67,11 @@ FILE* merge_files(FILE** f_array, int files){
 	while(!(is_eof(buff, files))){
 		//find minimun index 
 		index = min_index(buff, files);
-		
+
 		//write record in trace file
 		fprintf(trace, "%10lu", buff[index]);
-		fscanf(f_array[index], "%d%d", &event, &value);
+		fscanf(f_array[index], "%d%d%d", &threadID, &event, &value);
+		fprintf(trace, "%10d\t", threadID);
 		fprintf(trace, "%10d\t", event);
 		fprintf(trace, "%10d\n", value);
 
