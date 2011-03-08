@@ -58,7 +58,8 @@ FILE* merge_files(FILE** f_array, int files, long unsigned int last_tstamp){
 	fprintf(trace, "%lu:", last_tstamp);
 	fprintf(trace, "1(2):1:1(%d:1),1\n", files);
 
-	//(04/05/04 at 19:32):3771002:1(2):1:1(1:1),1
+	//dump communicator line
+	fprintf(trace, "c:1:1:1:1:1\n");
 
 	//load first timestamps
 	for(i=0; i<files; i++)
@@ -68,12 +69,13 @@ FILE* merge_files(FILE** f_array, int files, long unsigned int last_tstamp){
 		//find minimun index 
 		index = min_index(buff, files);
 
-		//write record in trace file
-		fprintf(trace, "%10lu", buff[index]);
+		//write event record in trace file
+		fprintf(trace, "2:1:1:1:");
 		fscanf(f_array[index], "%d%d%d", &threadID, &event, &value);
-		fprintf(trace, "%10d\t", threadID);
-		fprintf(trace, "%10d\t", event);
-		fprintf(trace, "%10d\n", value);
+		fprintf(trace, "%d:", threadID);	//threadID
+		fprintf(trace, "%lu:", buff[index]);	//time
+		fprintf(trace, "%d:", event);		//event_type
+		fprintf(trace, "%d\n", value);		//event_value
 
 		//read next timestamp of the file
 		fscanf(f_array[index], "%lu", &buff[index]);

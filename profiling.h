@@ -103,10 +103,10 @@ void flush(int i){
 
 	for(j=0; j<ext_buff_size; j++){
 		if(buff_array[(i*ext_buff_size) + j].timestamp !=0){
-			fprintf(f_array[i], "%10lu\t", buff_array[(i*ext_buff_size) + j].timestamp);	//time
-			fprintf(f_array[i], "%10d\t", i);	//thread id
-			fprintf(f_array[i], "%10d\t" , buff_array[(i*ext_buff_size) + j].event_type);	//event
-			fprintf(f_array[i], "%10d\n" , buff_array[(i*ext_buff_size) + j].event_value);	//value
+			fprintf(f_array[i], "%lu ", buff_array[(i*ext_buff_size) + j].timestamp);	//time
+			fprintf(f_array[i], "%d ", i);	//thread id
+			fprintf(f_array[i], "%d " , buff_array[(i*ext_buff_size) + j].event_type);	//event
+			fprintf(f_array[i], "%d\n" , buff_array[(i*ext_buff_size) + j].event_value);	//value
 		}
 	}
 
