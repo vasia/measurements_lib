@@ -38,32 +38,39 @@ FILE *input;		//file containing the post-processing data
 /*Parameters:
 	int buff_size: 	number of events that fit in each thread's buffer
 	file_prefix: 	to distinguish between threads
+	num_threads:	number of threads (including master thread)
 */
 	
 int init_profiling(int buff_size, char* file_prefix, int num_threads){
 	
 	struct event e;
 	char file_suf[10];	//file suffix
-	char *temp = malloc(10*sizeof(char));
+	char *temp = malloc(10*sizeof(char));	//to temporary store the file name
 	int i;
 
 	ext_buff_size = buff_size;
 
 	//allocate file descriptors array
-	f_array = malloc(num_threads*sizeof(FILE*));
+	if((f_array = malloc(num_threads*sizeof(FILE*))) == NULL){
+		printf("out of memory: f_array\n");
+		return -1;
+	}
 
 	//allocate cur positions array
-	cur_pos_array = malloc(num_threads*sizeof(int));
+	if((cur_pos_array = malloc(num_threads*sizeof(int))) == NULL){
+		printf("out of memory: cur_pos_array\n");
+		return -1;
+	}
 
 	//allocate array of buffers
 	if((buff_array = malloc(num_threads*buff_size*sizeof(e))) == NULL){
-		printf("out of memory");
+		printf("out of memory: buff_array");
 		return -1;
 	}
 
 	//open post-processing file - begin
 	if((input = fopen("input", "w")) == NULL){
-		printf("fopen error\n");
+		printf("fopen error: post processing file\n");
 		return -1;
 	}
 
@@ -86,7 +93,7 @@ int init_profiling(int buff_size, char* file_prefix, int num_threads){
 		else{
 			fprintf(f_array[i], "Initializing Time: [%lu]\n", getticks());
 			fprintf(f_array[i], "ThreadID: [%u]\n\n", i);
-			fprintf(f_array[i], "Timestamp \tThreadID  \tEvent     \tValue\n\n");
+			fprintf(f_array[i], "Timestamp\tThreadID\tEvent\tValue\n\n");
 		}
 	}
 	//close post-processing file
@@ -110,7 +117,7 @@ void flush(int i){
 		}
 	}
 
-	//initialize buffer & buffer pointer
+	//initialize buffer & buffer pointer -- not needed if called from finalize => fix it!
 	cur_pos_array[i] = 0;
 	for(j=0; j<ext_buff_size; j++){
 		buff_array[(i*ext_buff_size) + j].timestamp = 0;
