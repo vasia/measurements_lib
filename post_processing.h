@@ -22,7 +22,7 @@ by Vasiliki Kalavri (vasilikikalavri@gmail.com)*/
 
 //merge the files of f_array based on their timestamp
 //to create a Paraver-compatible trace file
-FILE* merge_files(FILE** f_array, int files, long unsigned int last_tstamp){
+FILE* merge_files(FILE** f_array, int files, long unsigned int rduration, long unsigned int tduration, long unsigned int last_tstamp){
 	
 	FILE* trace;	//the file descriptor of the trace file
 	long unsigned int cur_time;	//current timestamp
@@ -30,6 +30,9 @@ FILE* merge_files(FILE** f_array, int files, long unsigned int last_tstamp){
 	int i, j, index;
 	int threadID, event, value;
 	char s[100];
+
+	double factor = (double)rduration/tduration; //the factor by which ticks will have to be multiplied to give me ns
+	printf("factor is %lf\n", factor);
 
  	time_t tim=time(NULL);	
 
@@ -55,7 +58,7 @@ FILE* merge_files(FILE** f_array, int files, long unsigned int last_tstamp){
 	struct tm *now=localtime(&tim);
 	fprintf(trace, "(%02d/%02d/%d at ", now->tm_mday, now->tm_mon+1, now->tm_year-100);
 	fprintf(trace, "%02d:%02d):", now->tm_hour, now->tm_min);
-	fprintf(trace, "%lu:", last_tstamp);
+	fprintf(trace, "%lf:", last_tstamp*factor);	//multiply by factor to get ns
 	fprintf(trace, "1(2):1:1(%d:1),1\n", files);
 
 	//dump communicator line
@@ -73,7 +76,7 @@ FILE* merge_files(FILE** f_array, int files, long unsigned int last_tstamp){
 		fprintf(trace, "2:1:1:1:");
 		fscanf(f_array[index], "%d%d%d", &threadID, &event, &value);
 		fprintf(trace, "%d:", threadID+1);	//threadID+1 because paraver doesn't accept 0 as a valid threadID
-		fprintf(trace, "%lu:", buff[index]);	//time
+		fprintf(trace, "%lf:", buff[index]*factor);	//time: multiply by factor to get ns
 		fprintf(trace, "%d:", event);		//event_type
 		fprintf(trace, "%d\n", value);		//event_value
 

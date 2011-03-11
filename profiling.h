@@ -59,7 +59,7 @@ int init_profiling(int buff_size, char* file_prefix, int num_threads){
 
 	//get time in ns and ticks
 	gettimeofday(&tvs, NULL);
-  	starttime = tvs.tv_sec*1000000000.0 + tvs.tv_usec*1000;	//I want nanoseconds!
+  	starttime = tvs.tv_usec*1000;
 	startticks = getticks();
 	
 
@@ -175,10 +175,10 @@ int finalize_profiling(int num_threads){
 
 	//get time in ns and ticks
 	gettimeofday(&tve, NULL);
-  	endtime = tve.tv_sec*1000000000.0 + tve.tv_usec*1000;	//I want nanoseconds!
+  	endtime = tve.tv_usec*1000;	//I want nanoseconds!
 	endticks = getticks();
 
-	//open postprocessing file
+	//open post-processing file
 	if((input = fopen("input", "r+")) == NULL){
 			printf("fopen error\n");
 			return -1;
@@ -188,7 +188,7 @@ int finalize_profiling(int num_threads){
 		fgets(s, 50, input);
 
 	//write real and tick duration
-	fprintf(input, "%.0lf\t%lu\t", endtime - starttime, endticks - startticks);
+	fprintf(input, "%.0lf\t%lu\t", endtime - starttime, elapsed(endticks, startticks));
 
 	//write the last timestamp
 	fprintf(input, "%lu\n", getticks());

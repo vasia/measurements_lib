@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 	int num_files;
 	char s[7];		//change that dynamically!!!
 	int i;
-	long unsigned int last_tstamp;	//timestamp of last operation
+	long unsigned int last_tstamp, rduration, tduration;	//timestamp of last operation and durations in ns and ticks
 
 	if(argc<3){
 		printf("Usage: %s input_file num_files\n", argv[0]);
@@ -38,11 +38,11 @@ int main(int argc, char *argv[])
 				fgets(s, 7, input);
 			}
 		
-			//read last timestamp
-			fscanf(input, "%lu", &last_tstamp);
+			//read durations and last timestamp -> merge will do the conversion to ns
+			fscanf(input, "%lu%lu%lu", &rduration, &tduration, &last_tstamp);
 
 			//call post_processing library
-			merge_files(f_array, num_files, last_tstamp);
+			merge_files(f_array, num_files, rduration, tduration, last_tstamp);
 
 			//close all files
 			for(i=0; i<num_files; i++){
