@@ -40,7 +40,7 @@ FILE* merge_files(FILE** f_array, int files, long unsigned int last_tstamp){
 	}	
 
 	//open trace file
-	if((trace = fopen("trace_file", "w")) == NULL){
+	if((trace = fopen("trace_file.prv", "w")) == NULL){
         	printf("fopen trace file error");
                 return NULL;
         }
