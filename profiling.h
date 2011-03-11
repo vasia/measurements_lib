@@ -15,9 +15,16 @@ by Vasiliki Kalavri (vasilikikalavri@gmail.com)*/
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+#include <time.h>
 #include "src-cycle.h"
 
 #define END_OF_FILE -1
+
+/*real time variables*/
+struct timeval tvs, tve;
+double starttime, endtime;		//start and end time in ns 
+long unsigned int startticks, endticks;	//and ticks
+
 
 
 /*event struct*/
@@ -49,6 +56,12 @@ int init_profiling(int buff_size, char* file_prefix, int num_threads){
 	int i;
 
 	ext_buff_size = buff_size;
+
+	//get time in ns and ticks
+	gettimeofday(&tvs, NULL);
+  	starttime = tvs.tv_sec*1000000000.0 + tvs.tv_usec*1000;	//I want nanoseconds!
+	startticks = getticks();
+	
 
 	//allocate file descriptors array
 	if((f_array = malloc(num_threads*sizeof(FILE*))) == NULL){
@@ -160,7 +173,12 @@ int finalize_profiling(int num_threads){
 		fprintf(f_array[i], "%d\n", END_OF_FILE);
 	}
 
-	//write a timestamp later than the last event in the post-processing file 
+	//get time in ns and ticks
+	gettimeofday(&tve, NULL);
+  	endtime = tve.tv_sec*1000000000.0 + tve.tv_usec*1000;	//I want nanoseconds!
+	endticks = getticks();
+
+	//open postprocessing file
 	if((input = fopen("input", "r+")) == NULL){
 			printf("fopen error\n");
 			return -1;
@@ -168,6 +186,10 @@ int finalize_profiling(int num_threads){
 	//move to the end of the file
 	for(i=0; i<num_threads; i++)
 		fgets(s, 50, input);
+
+	//write real and tick duration
+	fprintf(input, "%.0lf\t%lu\t", endtime - starttime, endticks - startticks);
+
 	//write the last timestamp
 	fprintf(input, "%lu\n", getticks());
 
