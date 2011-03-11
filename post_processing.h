@@ -72,7 +72,7 @@ FILE* merge_files(FILE** f_array, int files, long unsigned int last_tstamp){
 		//write event record in trace file
 		fprintf(trace, "2:1:1:1:");
 		fscanf(f_array[index], "%d%d%d", &threadID, &event, &value);
-		fprintf(trace, "%d:", threadID);	//threadID
+		fprintf(trace, "%d:", threadID+1);	//threadID+1 because paraver doesn't accept 0 as a valid threadID
 		fprintf(trace, "%lu:", buff[index]);	//time
 		fprintf(trace, "%d:", event);		//event_type
 		fprintf(trace, "%d\n", value);		//event_value
