@@ -32,7 +32,7 @@ FILE* merge_files(FILE** f_array, int files, long unsigned int rduration, long u
 	char s[100];
 
 	double factor = (double)rduration/tduration; //the factor by which ticks will have to be multiplied to give me ns
-	printf("factor is %lf\n", factor);
+	double firsttimestamp;	//the timestamp of the 1st event
 
  	time_t tim=time(NULL);	
 
@@ -67,6 +67,28 @@ FILE* merge_files(FILE** f_array, int files, long unsigned int rduration, long u
 	//load first timestamps
 	for(i=0; i<files; i++)
 		fscanf(f_array[i], "%lu", &buff[i]);
+
+	/* Make one iteration outside the while loop
+	in order to save the value of the 1st timestamp
+	and shift all timestamps to start from 0*/
+
+	//find minimun index 
+	index = min_index(buff, files);
+
+	//save the value of the 1st timestamp
+	firsttimestamp = buff[index];
+
+	//write event record in trace file
+	fprintf(trace, "2:1:1:1:");
+	fscanf(f_array[index], "%d%d%d", &threadID, &event, &value);
+	fprintf(trace, "%d:", threadID+1);	//threadID+1 because paraver doesn't accept 0 as a valid threadID
+	fprintf(trace, "%lf:", (buff[index]-firsttimestamp)*factor);	//time: multiply by factor to get ns
+	fprintf(trace, "%d:", event);		//event_type
+	fprintf(trace, "%d\n", value);		//event_value
+
+	//read next timestamp of the file
+	fscanf(f_array[index], "%lu", &buff[index]);
+
 		
 	while(!(is_eof(buff, files))){
 		//find minimun index 
@@ -76,7 +98,7 @@ FILE* merge_files(FILE** f_array, int files, long unsigned int rduration, long u
 		fprintf(trace, "2:1:1:1:");
 		fscanf(f_array[index], "%d%d%d", &threadID, &event, &value);
 		fprintf(trace, "%d:", threadID+1);	//threadID+1 because paraver doesn't accept 0 as a valid threadID
-		fprintf(trace, "%lf:", buff[index]*factor);	//time: multiply by factor to get ns
+		fprintf(trace, "%lf:", (buff[index]-firsttimestamp)*factor);	//time: multiply by factor to get ns
 		fprintf(trace, "%d:", event);		//event_type
 		fprintf(trace, "%d\n", value);		//event_value
 
