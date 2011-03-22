@@ -191,7 +191,7 @@ int finalize_profiling(int num_threads){
 	fprintf(input, "%.0lf\t%lu\t", endtime - starttime, elapsed(endticks, startticks));
 
 	//write the last timestamp
-	fprintf(input, "%lu\n", getticks());
+	fprintf(input, "%lu\n", endticks);
 
 	//close file containing the post-processing data
 	fclose(input);
