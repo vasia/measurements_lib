@@ -59,7 +59,7 @@ int init_profiling(int buff_size, char* file_prefix, int num_threads){
 
 	//get time in ns and ticks
 	gettimeofday(&tvs, NULL);
-  	starttime = tvs.tv_usec*1000;
+  	starttime = tvs.tv_sec*1000000000 + tvs.tv_usec*1000;
 	startticks = getticks();
 	
 
@@ -175,7 +175,7 @@ int finalize_profiling(int num_threads){
 
 	//get time in ns and ticks
 	gettimeofday(&tve, NULL);
-  	endtime = tve.tv_usec*1000;	//I want nanoseconds!
+  	endtime = tve.tv_sec*1000000000 + tve.tv_usec*1000;	//I want nanoseconds!
 	endticks = getticks();
 
 	//open post-processing file
